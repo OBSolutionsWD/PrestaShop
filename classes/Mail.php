@@ -231,49 +231,50 @@ class MailCore extends ObjectModel
 
             return false;
         }
-
-        /* Construct multiple recipients list if needed */
-        $message = \Swift_Message::newInstance();
-        if (is_array($to) && isset($to)) {
-            foreach ($to as $key => $addr) {
-                $addr = trim($addr);
-                if (!Validate::isEmail($addr)) {
-                    Tools::dieOrLog(Context::getContext()->getTranslator()->trans('Error: invalid e-mail address', array(), 'Admin.Advparameters.Notification'), $die);
-
-                    return false;
-                }
-
-                if (is_array($toName) && isset($toName[$key])) {
-                    $addrName = $toName[$key];
-                } else {
-                    $addrName = $toName;
-                }
-
-                $addrName = (($addrName == null || $addrName == $addr || !Validate::isGenericName($addrName)) ? '' : self::mimeEncode($addrName));
-                $message->addTo($addr, $addrName);
-            }
-            $toPlugin = $to[0];
-        } else {
-            /* Simple recipient, one address */
-            $toPlugin = $to;
-            $toName = (($toName == null || $toName == $to) ? '' : self::mimeEncode($toName));
-            $message->addTo($to, $toName);
-        }
-
-        if (isset($bcc) && is_array($bcc)) {
-            foreach ($bcc as $addr) {
-                $addr = trim($addr);
-                if (!Validate::isEmail($addr)) {
-                    Tools::dieOrLog(Context::getContext()->getTranslator()->trans('Error: invalid e-mail address', array(), 'Admin.Advparameters.Notification'), $die);
-                    return false;
-                }
-                $message->addBcc($addr);
-            }
-        } elseif (isset($bcc)) {
-            $message->addBcc($bcc);
-        }
-
+        
         try {
+            /* Construct multiple recipients list if needed */
+            $message = \Swift_Message::newInstance();
+            if (is_array($to) && isset($to)) {
+                foreach ($to as $key => $addr) {
+                    $addr = trim($addr);
+                    if (!Validate::isEmail($addr)) {
+                        Tools::dieOrLog(Context::getContext()->getTranslator()->trans('Error: invalid e-mail address', array(), 'Admin.Advparameters.Notification'), $die);
+
+                        return false;
+                    }
+
+                    if (is_array($toName) && isset($toName[$key])) {
+                        $addrName = $toName[$key];
+                    } else {
+                        $addrName = $toName;
+                    }
+
+                    $addrName = (($addrName == null || $addrName == $addr || !Validate::isGenericName($addrName)) ? '' : self::mimeEncode($addrName));
+                    $message->addTo($addr, $addrName);
+                }
+                $toPlugin = $to[0];
+            } else {
+                /* Simple recipient, one address */
+                $toPlugin = $to;
+                $toName = (($toName == null || $toName == $to) ? '' : self::mimeEncode($toName));
+                $message->addTo($to, $toName);
+            }
+
+            if (isset($bcc) && is_array($bcc)) {
+                foreach ($bcc as $addr) {
+                    $addr = trim($addr);
+                    if (!Validate::isEmail($addr)) {
+                        Tools::dieOrLog(Context::getContext()->getTranslator()->trans('Error: invalid e-mail address', array(), 'Admin.Advparameters.Notification'), $die);
+                        return false;
+                    }
+                    $message->addBcc($addr);
+                }
+            } elseif (isset($bcc)) {
+                $message->addBcc($bcc);
+            }
+
+   
             /* Connect with the appropriate configuration */
             if ($configuration['PS_MAIL_METHOD'] == 2) {
                 if (empty($configuration['PS_MAIL_SERVER']) || empty($configuration['PS_MAIL_SMTP_PORT'])) {
